@@ -1,20 +1,47 @@
-import type { Config } from "tailwindcss";
+// Tailkit (Tailwind CSS v3 Configuration)
+import defaultTheme from "tailwindcss/defaultTheme";
 
-const config: Config = {
+import aspectRatio from "@tailwindcss/aspect-ratio";
+import forms from "@tailwindcss/forms";
+import typography from "@tailwindcss/typography";
+
+/** @type {import('tailwindcss').Config} */
+export default {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  darkMode: "class",
   theme: {
     extend: {
-      backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic":
-          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+      fontFamily: {
+        sans: ["Inter", ...defaultTheme.fontFamily.sans],
+      },
+      maxWidth: {
+        "8xl": "90rem",
+        "9xl": "105rem",
+        "10xl": "120rem",
+      },
+      zIndex: {
+        1: "1",
+        60: "60",
+        70: "70",
+        80: "80",
+        90: "90",
+        100: "100",
+      },
+      keyframes: {
+        "spin-slow": {
+          "100%": {
+            transform: "rotate(-360deg)",
+          },
+        },
+      },
+      animation: {
+        "spin-slow": "spin-slow 8s linear infinite",
       },
     },
   },
-  plugins: [],
+  plugins: [aspectRatio, forms, typography],
 };
-export default config;
