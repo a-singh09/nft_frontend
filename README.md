@@ -23,8 +23,8 @@ This is a decentralized NFT Marketplace built with Next.js and Ethereum. Users c
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/nft_marketplace.git
-   cd nft_marketplace
+   git clone https://github.com/a-singh09/nft_frontend/
+   cd nft_frontend
    ```
 
 2. Install dependencies:
