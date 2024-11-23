@@ -148,7 +148,6 @@ export default function MintNFTModal({
                 accept="image/*"
                 onChange={(e) => {
                   const selectedFile = e.target.files?.[0];
-                  console.log("Selected file:", selectedFile);
                   if (selectedFile) {
                     if (selectedFile.size > 5 * 1024 * 1024) {
                       alert("File size must be less than 5MB");
@@ -156,7 +155,6 @@ export default function MintNFTModal({
                       return;
                     }
                     setFile(selectedFile);
-                    console.log("File set:", selectedFile);
                   } else {
                     console.log("No file selected.");
                   }
