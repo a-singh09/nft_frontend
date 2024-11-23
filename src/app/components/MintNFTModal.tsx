@@ -28,72 +28,61 @@ export default function MintNFTModal({
         return;
       }
 
-      if (parseFloat(price) <= 0) {
-        alert("Price must be greater than 0");
-        return;
-      }
-
       setLoading(true);
 
-      const metadata = {
-        name,
-        description,
-        Image,
+      // Convert file to Base64
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+
+      reader.onloadend = async () => {
+        const base64data = reader.result;
+
+        const metadata = {
+          name,
+          description,
+          file: base64data,
+        };
+
+        const metadataString = JSON.stringify(metadata);
+        const tokenURI = `data:application/json;base64,${Buffer.from(metadataString).toString("base64")}`;
+
+        const tokenURISize = new Blob([tokenURI]).size;
+        if (tokenURISize > 100000) {
+          alert(
+            "Image is too large. Please choose a smaller image or reduce its quality.",
+          );
+          return;
+        }
+
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const contract = new ethers.Contract(
+          process.env.NEXT_PUBLIC_MARKETPLACE_ADDRESS!,
+          NFTMarketplaceABI,
+          signer,
+        );
+
+        const transaction = await contract.mintToken(
+          tokenURI,
+          ethers.parseEther(price),
+          {
+            value: LISTING_PRICE,
+            gasLimit: 2000000,
+          },
+        );
+
+        await transaction.wait();
+        onSuccess();
+        onClose();
       };
 
-      const metadataString = JSON.stringify(metadata);
-      const tokenURI = `data:application/json;base64,${Buffer.from(metadataString).toString("base64")}`;
-
-      const tokenURISize = new Blob([tokenURI]).size;
-      if (tokenURISize > 100000) {
-        alert(
-          "Image is too large. Please choose a smaller image or reduce its quality.",
-        );
-        return;
-      }
-
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(
-        process.env.NEXT_PUBLIC_MARKETPLACE_ADDRESS!,
-        NFTMarketplaceABI,
-        signer,
-      );
-
-      const balance = await provider.getBalance(await signer.getAddress());
-      if (balance < LISTING_PRICE) {
-        alert(
-          `Insufficient funds. You need at least 0.025 ETH to mint an NFT.`,
-        );
-        return;
-      }
-
-      const transaction = await contract.mintToken(
-        tokenURI,
-        ethers.parseEther("0.0025"),
-        {
-          value: LISTING_PRICE,
-          gasLimit: 2000000,
-        },
-      );
-
-      await transaction.wait();
-
-      onSuccess();
-      onClose();
-    } catch (error: any) {
-      console.error("Detailed error:", error);
-      let errorMessage = "Error minting NFT. Please check the console for details.";
-      
-      if (error.code === "INSUFFICIENT_FUNDS") {
-        errorMessage = "Insufficient funds to cover gas and listing price.";
-      } else if (error.code === "ACTION_REJECTED") {
-        errorMessage = "Transaction was rejected by the user.";
-      } else if (error.reason) {
-        errorMessage = `Error: ${error.reason}`;
-      }
-      
-      alert(errorMessage);
+      reader.onerror = (error) => {
+        console.error("Error converting file to Base64:", error);
+        alert("Error converting file. Please try again.");
+      };
+    } catch (error) {
+      console.error("Error minting NFT:", error);
+      alert("Error minting NFT. Please check the console for details.");
     } finally {
       setLoading(false);
     }
@@ -144,8 +133,9 @@ export default function MintNFTModal({
                 type="number"
                 step="0.01"
                 value={price}
-                onChange={(e) => setPrice(e.target.value)}
+                // onChange={(e) => setPrice(e.target.value)}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-600 focus:border-rose-500 focus:ring-rose-500"
+                disabled
               />
             </div>
 
@@ -157,14 +147,18 @@ export default function MintNFTModal({
                 type="file"
                 accept="image/*"
                 onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    if (file.size > 5 * 1024 * 1024) {
+                  const selectedFile = e.target.files?.[0];
+                  console.log("Selected file:", selectedFile);
+                  if (selectedFile) {
+                    if (selectedFile.size > 5 * 1024 * 1024) {
                       alert("File size must be less than 5MB");
                       e.target.value = "";
                       return;
                     }
-                    setFile(file);
+                    setFile(selectedFile);
+                    console.log("File set:", selectedFile);
+                  } else {
+                    console.log("No file selected.");
                   }
                 }}
                 className="mt-1 block w-full"

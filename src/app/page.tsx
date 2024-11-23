@@ -68,8 +68,14 @@ export default function Marketplace() {
                 "",
               );
               const decodedData = atob(base64Data);
+              console.log(decodedData);
+              
               metadata = JSON.parse(decodedData);
-              imageUrl = metadata.image;
+              console.log(metadata);
+              
+              imageUrl = metadata.file;
+              console.log(imageUrl);
+              
             } else {
               // Direct JSON or HTTP URL
               const response = await fetch(tokenURI);
